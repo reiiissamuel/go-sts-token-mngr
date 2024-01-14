@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
-	"github.com/reiiissamuel/goststokenmngr/internal"
+	"github.com/reiiissamuel/go-sts-token-mngr/internal"
 )
 
 func init() {
