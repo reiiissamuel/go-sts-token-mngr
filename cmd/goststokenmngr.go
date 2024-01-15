@@ -1,18 +1,17 @@
-package goststokenmngr
+package main
 
 import (
-	"log"
+	"fmt"
 
 	"github.com/joho/godotenv"
 	"github.com/reiiissamuel/go-sts-token-mngr/internal"
 )
 
 func init() {
-
 	err := godotenv.Load(".env")
 
 	if err != nil {
-		log.Fatal("Error loading .env file:", err)
+		fmt.Println("Error loading .env file:", err)
 	}
 }
 

@@ -14,19 +14,15 @@ import (
 
 var (
 	tokenMutex      sync.Mutex
-	awsConfig       *aws.Config
 	token           string
 	assumeRoleInput sts.AssumeRoleInput
-	roleArn         = os.Getenv("AWS_ROLE_ARN")
-	roleSessionName = os.Getenv("AWS_ROLE_SESSION_NAME")
-	durationSeconds = os.Getenv("AWS_TOKEN_VALID_SECONDS")
-	region          = os.Getenv("AWS_REGION")
 	stsInstance     *sts.STS
 )
 
 const (
-	MSG_STARTING_CONFIG  = "Iniciando configurações...\n"
-	MSG_CONFIG_COMPLETED = "Configurações concluídas.\n"
+	MSG_STARTING_CONFIG  = "Iniciando configurações..."
+	MSG_CONFIG_COMPLETED = "Configurações concluídas."
+	MSG_STARTING_JOB     = "Iniciando Job..."
 	MSG_ERROR            = "Error: %v\n"
 )
 
@@ -38,12 +34,11 @@ func GetToken() string {
 
 func StartScheduler() {
 	startAWSStAPICallerConfig()
-
-	interval, parseErr := strconv.ParseInt(durationSeconds, 10, 64)
+	interval, parseErr := strconv.ParseInt(os.Getenv("AWS_TOKEN_VALID_SECONDS"), 10, 64)
 	if parseErr != nil {
 		fmt.Printf(MSG_ERROR, parseErr)
 	}
-
+	fmt.Println(MSG_STARTING_JOB)
 	for {
 		// Execute a função de busca do token
 		if err := updateToken(); err != nil {
@@ -56,15 +51,12 @@ func StartScheduler() {
 }
 
 func startAWSStAPICallerConfig() {
-	fmt.Printf(MSG_STARTING_CONFIG)
-	awsConfig = &aws.Config{
-		Region: aws.String(region), // Defina a região desejada
-	}
+	fmt.Println(MSG_STARTING_CONFIG)
 
 	getNewSTSInstance()
 	getAssumeRoleInput()
 
-	fmt.Printf(MSG_CONFIG_COMPLETED)
+	fmt.Println(MSG_CONFIG_COMPLETED)
 }
 
 func updateToken() error {
@@ -86,7 +78,7 @@ func updateToken() error {
 
 func getNewSTSInstance() {
 	// Configuração do AWS STS
-	session, err := session.NewSession(awsConfig)
+	session, err := session.NewSession()
 	if err != nil {
 		fmt.Printf(MSG_ERROR, err)
 	}
@@ -94,15 +86,15 @@ func getNewSTSInstance() {
 }
 
 func getAssumeRoleInput() {
-	interval, err := strconv.ParseInt(durationSeconds, 10, 64)
+	interval, err := strconv.ParseInt(os.Getenv("AWS_TOKEN_VALID_SECONDS"), 10, 64)
 
 	if err != nil {
 		fmt.Printf(MSG_ERROR, err)
 	}
 
 	assumeRoleInput = sts.AssumeRoleInput{
-		RoleArn:         aws.String(roleArn),
-		RoleSessionName: aws.String(roleSessionName),
+		RoleArn:         aws.String(os.Getenv("AWS_ROLE_ARN")),
+		RoleSessionName: aws.String(os.Getenv("AWS_ROLE_SESSION_NAME")),
 		DurationSeconds: aws.Int64(interval),
 	}
 }
